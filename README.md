@@ -6,6 +6,8 @@ Everything here runs **locally, free, and without any vendor cloud API** for the
 
 > **Legal / ToS note:** the Alexa section talks to Amazon's web endpoints with your own logged-in session. That's the same thing the Alexa web console does, but it is unofficial and may break when Amazon changes its login. Use for personal automation on devices you own.
 
+> **Note — no scripts ship in this repo:** this repository is documentation-only. The helper scripts referenced below (`scripts/cast_speak.py`, `scripts/alexa/alexa.sh`, `scripts/alexa/setup-cookie.js`) are **not included**; copy the code blocks into those paths yourself (paths referenced in earlier drafts, shown as examples).
+
 ---
 
 ## Architecture at a glance
@@ -47,7 +49,7 @@ time.sleep(5)
 EOF
 ```
 
-Note the **UUID** and IP of your speaker (e.g. `2922d960-...-4861813e8d50`, `192.168.0.191:8009`). **Always resolve by UUID, not IP** — DHCP reassigns IPs after router reboots.
+Note the **UUID** and IP of your speaker (e.g. `<cast-uuid>`, `192.168.x.x:8009`). **Always resolve by UUID, not IP** — DHCP reassigns IPs after router reboots.
 
 ---
 
@@ -70,7 +72,7 @@ Save as `scripts/cast_speak.py`:
 import argparse, subprocess, tempfile, os, time, socket, sys
 import pychromecast
 
-UUID = "2922d960-3031-472f-ddcb-4861813e8d50"   # <- your speaker's cast UUID
+UUID = "<cast-uuid>"                            # <- your speaker's cast UUID
 VOICE = "en-IN-NeerjaNeural"                    # Indian English female; pick any from edge-tts
 
 def resolve_by_uuid(target_uuid):
@@ -101,7 +103,7 @@ def main():
                   "audio/mpeg")
 ```
 
-> Simpler alternative used in production: serve the MP3 with a tiny HTTP server bound to your LAN IP, then `play_media(url)`. The full, battle-tested script (chime intro, volume restore, AAC/44.1kHz quirks) lives at `scripts/cast_speak.py` in this repo's examples.
+> Simpler alternative used in production: serve the MP3 with a tiny HTTP server bound to your LAN IP, then `play_media(url)`. The full, battle-tested version (chime intro, volume restore, AAC/44.1kHz quirks) is **not included in this repo** — extend the script above with those details yourself.
 
 Key hard-won gotchas (each one cost us a debugging round):
 1. **Mi Smart Speaker Lite silently ignores odd WAV formats** — use **AAC or MP3 at 44.1 kHz**, always.
@@ -129,12 +131,12 @@ mkdir -p scripts/alexa && cd scripts/alexa
 npm init -y && npm install alexa-cookie2
 ```
 
-Save as `scripts/alexa/setup-cookie.js` (condensed — full version in repo):
+Save as `scripts/alexa/setup-cookie.js` (condensed):
 
 ```javascript
 const AlexaCookie = require('alexa-cookie2');
 const config = {
-  proxyOwnIp: '192.168.0.11',   // your machine's LAN IP
+  proxyOwnIp: '192.168.x.x',    // your machine's LAN IP
   proxyPort: 3456,
   proxyListenBind: '0.0.0.0',
   setupProxy: true, proxyOnly: true,
@@ -226,7 +228,7 @@ The **speak/ announce** actions POST to `/api/behaviors/preview` with a behavior
 {"behaviorId":"PREVIEW","sequenceJson":"{\"@type\":\"com.amazon.alexa.behaviors.model.Sequence\"…\"speak\"…}","status":"RUNNING"}
 ```
 
-(Full working `speak`/`announce`/`volume` implementation is in `scripts/alexa/alexa.sh` — it also auto-guards volume for other household members: reads current level, sets target, speaks, restores.)
+(References to full implementations of `speak`/`announce`/`volume` from earlier drafts are **not included in this repo** — for the volume guard, the recipe reads: current level → set target → speak → restore.)
 
 ### 2.4 Test end-to-end
 
